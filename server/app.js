@@ -56,7 +56,8 @@ export function createApp(db){
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", 'https://www.gstatic.com', 'https://www.google.com', 'https://www.recaptcha.net'],
         styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", 'data:', 'blob:', 'https://images.unsplash.com', 'https://res.cloudinary.com', 'https://*.tile.openstreetmap.org', 'https://*.basemaps.cartocdn.com', 'https://*.cartocdn.com'],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https://images.unsplash.com', 'https://res.cloudinary.com', 'https://server.arcgisonline.com', 'https://*.arcgisonline.com', 'https://*.tile.openstreetmap.org', 'https://*.basemaps.cartocdn.com', 'https://*.cartocdn.com'],
+
 
         connectSrc: ["'self'", '*', 'https://*.googleapis.com', 'https://*.firebaseapp.com', 'https://*.firebaseio.com', 'https://www.gstatic.com', 'https://securetoken.googleapis.com'],
         frameSrc: ['https://www.google.com', 'https://www.recaptcha.net', 'https://*.firebaseapp.com'],
