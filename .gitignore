@@ -1,0 +1,9 @@
+node_modules/
+.pnpm-store/
+.env
+data/
+uploads/
+test-results/
+playwright-report/
+*.log
+service-account*.json

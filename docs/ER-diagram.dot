@@ -1,0 +1,27 @@
+digraph FoodSaver {
+  graph [rankdir=LR,bgcolor="#f7f8f3",pad=0.5,nodesep=0.4,ranksep=0.8,fontname="Arial",label="FoodSaver — relational database",labelloc=t,fontsize=24,fontcolor="#174c3c"];
+  node [shape=record,style="rounded,filled",fillcolor="white",color="#bacab0",fontname="Arial",fontsize=11,fontcolor="#294c3b",margin=0.15];
+  edge [color="#76935e",fontname="Arial",fontsize=9,fontcolor="#617654",arrowsize=0.7];
+  Users [label="{Users|user_id PK\lfull_name\lphone_number UNIQUE\lfirebase_uid UNIQUE\lemail\llatitude / longitude\lrole / account_status\lcreated_at\l}"];
+  Food [label="{Food_Donations|food_id PK\ldonor_id FK\lfood_name / category / food_type\lquantity / people_count\ldescription / image_url\lprepared_at / expires_at\lpickup_area / pickup_address\llatitude / longitude\lsafe_storage / status\lcreated_at\l}"];
+  Requests [label="{Food_Requests|request_id PK\lfood_id FK\lreceiver_id FK\lrequest_status\lrequested_at / accepted_at\lcollected_at\lUNIQUE (food_id, receiver_id)\l}"];
+  Messages [label="{Messages|message_id PK\lrequest_id FK\lsender_id FK\lmessage_text / sent_at\l}"];
+  Notifications [label="{Notifications|notification_id PK\luser_id FK\lmessage / notification_type\lis_read / created_at\l}"];
+  Reports [label="{Reports|report_id PK\lreporter_id FK\lreported_user_id FK (nullable)\lfood_id FK (nullable)\lreason / status / created_at\l}"];
+  Audit [label="{Admin_Audit_Logs|log_id PK\ladmin_id FK\laction / target_type / target_id\lcreated_at\l}"];
+  Sessions [label="{Sessions|token_hash PK\luser_id FK\lcsrf_token / admin_verified\lexpires_at / created_at\l}"];
+  TOTP [label="{Admin_TOTP_Uses|user_id PK, FK\llast_step\l}"];
+  OTP [label="{OTP_Challenges (demo only)|challenge_id PK\lphone_number / otp_hash\lattempts / expires_at\lcreated_at\l}",fillcolor="#fff7e7"];
+  Users -> Food [label="1 : many — donates"];
+  Food -> Requests [label="1 : many — receives"];
+  Users -> Requests [label="1 : many — requests"];
+  Requests -> Messages [label="1 : many"];
+  Users -> Messages [label="sender",style=dashed];
+  Users -> Notifications [label="1 : many"];
+  Users -> Reports [label="reporter"];
+  Food -> Reports [label="optional target",style=dashed];
+  Users -> Audit [label="admin"];
+  Users -> Sessions [label="1 : many"];
+  Users -> TOTP [label="1 : 0..1"];
+  { rank=same; Notifications; Food; Sessions; Audit; TOTP; OTP; }
+}
