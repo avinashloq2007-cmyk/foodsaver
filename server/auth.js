@@ -14,12 +14,17 @@ export async function loadSession(db,req){
   return row?.account_status==='active'?row:null;
 }
 export const safeUser=u=>({user_id:u.user_id,full_name:u.full_name,phone_number:u.phone_number,email:u.email,latitude:u.latitude,longitude:u.longitude,role:u.role,account_status:u.account_status});
+export function cookieOptions(admin=false){
+  const isHttps=Boolean(config.production||process.env.RENDER||(config.origin&&config.origin.startsWith('https:'))||process.env.SECURE_COOKIES==='true');
+  return {httpOnly:true,secure:isHttps,sameSite:isHttps?'none':'lax',maxAge:admin?3600000:86400000,path:'/'};
+}
 export async function createSession(db,res,user,admin=false){
   const token=randomBytes(32).toString('hex'),csrf=randomBytes(32).toString('hex'),now=Date.now();
   await db.query('INSERT INTO sessions (token_hash,user_id,csrf_token,admin_verified,expires_at,created_at) VALUES (?,?,?,?,?,?)',[digest(token),user.user_id,csrf,admin?1:0,now+(admin?3600000:86400000),now]);
-  res.cookie('foodsaver_session',token,{httpOnly:true,secure:config.production&&new URL(config.origin).protocol==='https:',sameSite:'strict',maxAge:admin?3600000:86400000,path:'/'});
+  res.cookie('foodsaver_session',token,cookieOptions(admin));
   return {user:safeUser(user),csrf};
 }
+
 export async function issueDemoOTP(db,number){
   assert(config.demo,404,'Demo authentication is disabled.'); phone(number);
   const now=Date.now();

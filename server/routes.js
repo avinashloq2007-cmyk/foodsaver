@@ -2,16 +2,27 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { config } from './config.js';
 import { assert, text, coords, id, publicFood, csv } from './utils.js';
-import { createSession, loadSession, safeUser, issueDemoOTP, verifyDemoOTP, verifyFirebase, getOrCreateUser, verifyAdmin } from './auth.js';
+import { createSession, loadSession, safeUser, issueDemoOTP, verifyDemoOTP, verifyFirebase, getOrCreateUser, verifyAdmin, cookieOptions } from './auth.js';
 import { availableFood, createFood, requestFood, actOnRequest, cancelFood, chatAccess, notify, emitEvents, audit, foodInput } from './services.js';
 import { upload, storeImage } from './uploads.js';
 
 export function routes(db,io){
+  const allowedOrigins = [
+    config.origin,
+    process.env.FRONTEND_URL,
+    process.env.APP_ORIGIN
+  ].filter(Boolean).map(o => o.replace(/\/+$/, ''));
+  const isOriginAllowed = origin => {
+    if (!origin) return true;
+    if (process.env.ALLOW_ALL_ORIGINS === 'true') return true;
+    return allowedOrigins.includes(origin.replace(/\/+$/, ''));
+  };
+
   const router=Router(),authLimit=rateLimit({windowMs:15*60000,limit:30,standardHeaders:'draft-8',legacyHeaders:false,message:{error:'Too many login attempts. Try again in 15 minutes.'}}),writeLimit=rateLimit({windowMs:60000,limit:40,standardHeaders:'draft-8',legacyHeaders:false,message:{error:'Too many requests. Please slow down.'}});
   router.use(async(req,res,next)=>{req.user=await loadSession(db,req);next();});
   router.use((req,res,next)=>{
     if(!['GET','HEAD','OPTIONS'].includes(req.method)){
-      assert(req.headers.origin===config.origin,403,'Request origin is not allowed.');
+      assert(!req.headers.origin || isOriginAllowed(req.headers.origin),403,'Request origin is not allowed.');
       if(req.user)assert(req.headers['x-csrf-token']===req.user.csrf_token,403,'Session verification failed. Refresh and try again.');
     }next();
   });
@@ -29,7 +40,8 @@ export function routes(db,io){
     if(req.user)await db.query('DELETE FROM sessions WHERE token_hash=?',[req.user.token_hash]);
     res.json({...await createSession(db,res,user,isAdmin),admin_verified:isAdmin});
   });
-  router.post('/auth/logout',auth,async(req,res)=>{await db.query('DELETE FROM sessions WHERE token_hash=?',[req.user.token_hash]);io.in(`session:${req.user.token_hash}`).disconnectSockets(true);res.clearCookie('foodsaver_session',{path:'/'});res.json({success:true});});
+  router.post('/auth/logout',auth,async(req,res)=>{await db.query('DELETE FROM sessions WHERE token_hash=?',[req.user.token_hash]);io.in(`session:${req.user.token_hash}`).disconnectSockets(true);res.clearCookie('foodsaver_session',cookieOptions());res.json({success:true});});
+
   router.patch('/profile',auth,writeLimit,async(req,res)=>{
     const name=text(req.body.full_name,'Full name',2,100),email=req.body.email?text(req.body.email,'Email',3,254):null;
     assert(!email||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),400,'Enter a valid email.');

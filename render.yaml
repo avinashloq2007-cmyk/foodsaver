@@ -1,0 +1,43 @@
+services:
+  # 1. FoodSaver Backend API & Real-time WebSockets
+  - type: web
+    name: foodsaver-api
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: node server/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_DRIVER
+        value: mysql
+      - key: TRUST_PROXY
+        value: "1"
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: MYSQL_HOST
+        sync: false
+      - key: MYSQL_PORT
+        value: "3306"
+      - key: MYSQL_DATABASE
+        value: foodsaver
+      - key: MYSQL_USER
+        sync: false
+      - key: MYSQL_PASSWORD
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+
+  # 2. FoodSaver Frontend (Static Single-Page Application)
+  - type: web
+    name: foodsaver-web
+    runtime: static
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./public
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

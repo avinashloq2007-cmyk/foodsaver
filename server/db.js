@@ -16,8 +16,27 @@ export class Database {
       this.raw = new DatabaseSync(path);
       this.raw.exec('PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;');
     } else {
-      this.pool = mysql.createPool({host:process.env.MYSQL_HOST || '127.0.0.1', port:Number(process.env.MYSQL_PORT || 3306), database:process.env.MYSQL_DATABASE || 'foodsaver', user:process.env.MYSQL_USER || 'foodsaver', password:process.env.MYSQL_PASSWORD, connectionLimit:10, supportBigNumbers:true, bigNumberStrings:false, multipleStatements:false});
+      const dbUrl = process.env.DATABASE_URL || process.env.MYSQL_URL;
+      const isRemote = Boolean(dbUrl) || (process.env.MYSQL_HOST && process.env.MYSQL_HOST !== '127.0.0.1' && process.env.MYSQL_HOST !== 'localhost');
+      const ssl = process.env.MYSQL_SSL === 'false' ? undefined : (process.env.MYSQL_SSL === 'true' || isRemote ? { rejectUnauthorized: false } : undefined);
+      if (dbUrl) {
+        this.pool = mysql.createPool({ uri: dbUrl, connectionLimit: 10, supportBigNumbers: true, bigNumberStrings: false, multipleStatements: false, ssl });
+      } else {
+        this.pool = mysql.createPool({
+          host: process.env.MYSQL_HOST || '127.0.0.1',
+          port: Number(process.env.MYSQL_PORT || 3306),
+          database: process.env.MYSQL_DATABASE || 'foodsaver',
+          user: process.env.MYSQL_USER || 'foodsaver',
+          password: process.env.MYSQL_PASSWORD,
+          connectionLimit: 10,
+          supportBigNumbers: true,
+          bigNumberStrings: false,
+          multipleStatements: false,
+          ssl
+        });
+      }
     }
+
   }
   async exclusive(fn) {
     const previous = this.tail;
