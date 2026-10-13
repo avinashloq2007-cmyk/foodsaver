@@ -7,7 +7,7 @@ export const digest=value=>createHash('sha256').update(value).digest('hex');
 const otpHash=(challenge,code)=>createHmac('sha256',config.secret).update(`${challenge}:${code}`).digest('hex');
 const safeEqual=(a,b)=>typeof a==='string'&&typeof b==='string'&&a.length===b.length&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
 export function phone(value){assert(typeof value==='string'&&/^\+[1-9]\d{7,14}$/.test(value),400,'Use an international phone number, such as +919876543210.');return value;}
-export function cookieToken(req){return (req.headers.cookie||'').split(';').map(x=>x.trim()).find(x=>x.startsWith('foodsaver_session='))?.slice(18);}
+export function cookieToken(req){const c=(req.headers.cookie||'').split(';').map(x=>x.trim());return c.find(x=>x.startsWith('aravuun_session='))?.slice(16)||c.find(x=>x.startsWith('foodsaver_session='))?.slice(18);}
 export async function loadSession(db,req){
   const token=cookieToken(req); if(!token||!/^[a-f0-9]{64}$/.test(token))return null;
   const [row]=await db.query('SELECT s.*, u.full_name,u.phone_number,u.email,u.firebase_uid,u.latitude,u.longitude,u.role,u.account_status FROM sessions s JOIN users u ON u.user_id=s.user_id WHERE s.token_hash=? AND s.expires_at>?',[digest(token),Date.now()]);
@@ -21,6 +21,7 @@ export function cookieOptions(admin=false){
 export async function createSession(db,res,user,admin=false){
   const token=randomBytes(32).toString('hex'),csrf=randomBytes(32).toString('hex'),now=Date.now();
   await db.query('INSERT INTO sessions (token_hash,user_id,csrf_token,admin_verified,expires_at,created_at) VALUES (?,?,?,?,?,?)',[digest(token),user.user_id,csrf,admin?1:0,now+(admin?3600000:86400000),now]);
+  res.cookie('aravuun_session',token,cookieOptions(admin));
   res.cookie('foodsaver_session',token,cookieOptions(admin));
   return {user:safeUser(user),csrf};
 }

@@ -114,7 +114,7 @@ export function routes(db,io){
   router.get('/admin/audit',async(req,res)=>res.json(await db.query('SELECT l.*,u.full_name AS admin_name FROM admin_audit_logs l JOIN users u ON u.user_id=l.admin_id ORDER BY created_at DESC LIMIT 200')));
   router.get('/admin/export',async(req,res)=>{
     const exports={food:'SELECT food_id,food_name,category,people_count,pickup_area,status,created_at FROM food_donations',requests:'SELECT request_id,food_id,request_status,requested_at,accepted_at,collected_at FROM food_requests',users:'SELECT user_id,full_name,role,account_status,created_at FROM users'};
-    const type=req.query.type||'food';assert(exports[type],400,'Invalid report type.');res.type('text/csv').attachment(`foodsaver-${type}.csv`).send(csv(await db.query(exports[type])));await audit(db,req.user,'export-csv',type,'all');
+    const type=req.query.type||'food';assert(exports[type],400,'Invalid report type.');res.type('text/csv').attachment(`aravuun-${type}.csv`).send(csv(await db.query(exports[type])));await audit(db,req.user,'export-csv',type,'all');
   });
   return router;
 }

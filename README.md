@@ -1,4 +1,4 @@
-# FoodSaver — Good food. Greater good.
+# Aravuun — Good food. Greater good.
 
 A working food donation platform using HTML, CSS, JavaScript, Bootstrap 5, Node.js, Express, MySQL, Firebase Phone Authentication, Leaflet/OpenStreetMap, Socket.IO, and Cloudinary.
 
@@ -13,7 +13,7 @@ cd foodsaver
 npm run demo
 ```
 
-Open **http://localhost:3000**. On Windows, the supplied `Start-FoodSaver.cmd` also starts the demo. Keep its terminal running; use Ctrl+C to stop it.
+Open **http://localhost:3000**. Keep its terminal running; use Ctrl+C to stop it.
 
 This mode uses a real SQLite relational database at `data/demo.sqlite`, automatically initializes the schema and seeds an empty database. Writes, requests, messages, notifications and admin changes persist across restarts. It is a separate development path, not a substitute for the production MySQL connection. It binds only to `127.0.0.1` and is explicitly prohibited in production.
 
@@ -22,7 +22,7 @@ This mode uses a real SQLite relational database at `data/demo.sqlite`, automati
 | Aarav Sharma | +919876543210 | Discover food and request pickup |
 | Ananya Rao | +919876543211 | Donate food, accept and complete requests |
 | Community Kitchen | +919876543212 | Another donor or requester |
-| FoodSaver Admin | +919876543299 | Admin login; demo second factor **654321** |
+| Aravuun Admin | +919876543299 | Admin login; demo second factor **654321** |
 
 Click a sample account, send the code, then enter the random six-digit **local demo code shown on screen**. Codes expire after five minutes, allow five attempts, cannot be reused, and have a 60-second resend cooldown and five-per-hour limit. No SMS is sent. Demo OTPs are stored as HMAC hashes, never plaintext.
 
